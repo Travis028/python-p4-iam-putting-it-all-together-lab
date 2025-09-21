@@ -36,24 +36,29 @@ with app.app_context():
             image_url=fake.url(),
         )
 
-        user.password_hash = user.username + 'password'
+        # Set password using the password_hash setter
+        user.password_hash = username + 'password'
 
         users.append(user)
 
     db.session.add_all(users)
+    db.session.commit()  # Commit users first to get their IDs
 
     print("Creating recipes...")
     recipes = []
     for i in range(100):
         instructions = fake.paragraph(nb_sentences=8)
         
+        # Make sure instructions are at least 50 characters long
+        while len(instructions) < 50:
+            instructions = fake.paragraph(nb_sentences=8)
+        
         recipe = Recipe(
             title=fake.sentence(),
             instructions=instructions,
             minutes_to_complete=randint(15,90),
+            user_id=rc(users).id  # Assign a random user ID
         )
-
-        recipe.user = rc(users)
 
         recipes.append(recipe)
 
